@@ -1,0 +1,112 @@
+package com.maher.focus.ui.screens
+
+import androidx.compose.foundation.layout.*
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.maher.focus.FocusViewModel
+import com.maher.focus.data.FocusCategory
+import com.maher.focus.data.RoutineFrequency
+import com.maher.focus.data.TaskPriority
+
+@Composable
+fun AddTaskScreen(viewModel: FocusViewModel) {
+    var title by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf(FocusCategory.WORK) }
+    var priority by remember { mutableStateOf(TaskPriority.IMPORTANT_WEEK) }
+    var dueDate by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var isRecurring by remember { mutableStateOf(false) }
+    var frequency by remember { mutableStateOf(RoutineFrequency.DAILY) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(18.dp)
+    ) {
+        ScreenTitle(
+            title = "Ajout rapide",
+            subtitle = "Entre juste assez d’information. Une tâche imparfaite est meilleure qu’une idée oubliée."
+        )
+
+        OutlinedTextField(
+            value = title,
+            onValueChange = { title = it },
+            label = { Text("Titre") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(Modifier.height(12.dp))
+        CategoryDropdown(selected = category, onSelected = { category = it })
+        Spacer(Modifier.height(12.dp))
+        PriorityDropdown(selected = priority, onSelected = { priority = it })
+        Spacer(Modifier.height(12.dp))
+        OutlinedTextField(
+            value = dueDate,
+            onValueChange = { dueDate = it },
+            label = { Text("Date limite optionnelle : AAAA-MM-JJ") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(Modifier.height(12.dp))
+        OutlinedTextField(
+            value = note,
+            onValueChange = { note = it },
+            label = { Text("Note optionnelle") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3
+        )
+        Spacer(Modifier.height(12.dp))
+        CalmCard {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Tâche récurrente", modifier = Modifier.weight(1f))
+                Switch(checked = isRecurring, onCheckedChange = { isRecurring = it })
+            }
+            if (isRecurring) {
+                Spacer(Modifier.height(8.dp))
+                RoutineFrequencyDropdown(selected = frequency, onSelected = { frequency = it })
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Button(
+            onClick = {
+                viewModel.addTask(
+                    title = title,
+                    category = category,
+                    priority = priority,
+                    dueDateText = dueDate,
+                    note = note,
+                    isRecurring = isRecurring,
+                    routineFrequency = if (isRecurring) frequency else null
+                )
+                title = ""
+                dueDate = ""
+                note = ""
+                isRecurring = false
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ajouter la tâche")
+        }
+    }
+}
